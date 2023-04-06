@@ -1,0 +1,7 @@
+name = "Experiments"
+uuid = "503d52aa-1408-42e7-96f6-8b75992d681e"
+authors = ["Kyle Sherbert <kyle.sherbert@vt.edu> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
