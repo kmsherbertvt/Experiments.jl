@@ -32,8 +32,6 @@ The most important of these is `collectdata`, so find its documentation too!
 """
 module Experiments
 
-using IterTools: flagfirst
-
 #= INTERFACE, IMPLEMENTED BY SUB-PACKAGES =#
 
 abstract type Control end
@@ -67,6 +65,30 @@ function synthesize(expmt::Control, xvars::Independent)
     setup = initialize(expmt)
     result = runtrial(expmt, setup, xvars)
     return synthesize(expmt, setup, xvars, result)
+end
+
+"""
+    header(
+        io::IO, ::Type{C}, xvars::Type{I}, yvars::Type{D},
+    ) where {C <: Control, I <: Independent, D <: Dependent}
+
+Write all attribute names to `io`, separated by tabs.
+
+This method, unlike its counterpart, doesn't require generating a record first.
+
+Attributes in `Independent` are written first, then `Dependent`, then `Control`,
+    in the order that they are defined in these structs.
+
+"""
+function header(
+    io::IO, ::Type{C}, xvars::Type{I}, yvars::Type{D},
+) where {C <: Control, I <: Independent, D <: Dependent}
+    join(io, fieldnames(C), "\t")
+    print(io, "\t")
+    join(io, fieldnames(I), "\t")
+    print(io, "\t")
+    join(io, fieldnames(D), "\t")
+    print(io, "\n")
 end
 
 """
@@ -129,16 +151,15 @@ function collectdata(io::IO, expmt::Control, setup::Setup, index::IndexType;
         writeheader=false)
     result = nothing
 
-    for (first, i) in flagfirst(index)
+    if writeheader
+        header(io, typeof(expmt), typeof(xvars), typeof(yvars))
+        flush(io)
+    end
+
+    for i in index
         xvars = mapindex(expmt, i)
         result = runtrial(expmt, setup, xvars)
         yvars = synthesize(expmt, setup, xvars, result)
-
-        # FIRST ITERATION ONLY: WRITE THE HEADER, IF REQUESTED
-        if first && writeheader
-            header(io, expmt, xvars, yvars)
-            flush(io)
-        end
 
         record(io, expmt, xvars, yvars)
         flush(io)
