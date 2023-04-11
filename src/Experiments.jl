@@ -83,11 +83,11 @@ Attributes in `Independent` are written first, then `Dependent`, then `Control`,
 function header(
     io::IO, ::Type{C}, xvars::Type{I}, yvars::Type{D},
 ) where {C <: Control, I <: Independent, D <: Dependent}
-    join(io, fieldnames(C), "\t")
-    print(io, "\t")
     join(io, fieldnames(I), "\t")
     print(io, "\t")
     join(io, fieldnames(D), "\t")
+    print(io, "\t")
+    join(io, fieldnames(C), "\t")
     print(io, "\n")
 end
 
